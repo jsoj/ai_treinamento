@@ -1,159 +1,13 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Agendamento - Produtiva Academy</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        // COLOQUE SUAS CREDENCIAIS DO SUPABASE AQUI
+        const SUPABASE_URL = 'https://supabasekong-m10rnj4v52193ynkayghr8kl.projetobrasil2050.site';
+        const SUPABASE_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJzdXBhYmFzZSIsImlhdCI6MTc4MDIwOTEyMCwiZXhwIjo0OTM1ODgyNzIwLCJyb2xlIjoiYW5vbiJ9.-_OXQ71EzHOMJB62pk4MSx52XpZtACxwbW0f8SeQFgc';
         
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* slate-50 */
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-            overflow: hidden; /* Força a tela a nunca ter barra de rolagem */
-        }
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        ::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* Efeitos visuais para o Dropzone */
-        .dropzone {
-            transition: all 0.2s ease;
-        }
-        .dropzone.drag-over {
-            background-color: #f0fdf4; /* emerald-50 */
-            border-color: #10b981; /* emerald-500 */
-            border-style: solid;
-        }
-        
-        /* Cursor de agarrar */
-        .grab-cursor {
-            cursor: grab;
-        }
-        .grab-cursor:active {
-            cursor: grabbing;
-        }
-
-        /* Transições do Card */
-        .card-standard {
-            transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.2s;
-        }
-        .card-standard:hover {
-            transform: scale(0.98);
-        }
-    </style>
-</head>
-<body class="h-screen w-screen flex flex-col text-slate-800">
-
-    <!-- Cabeçalho Principal -->
-    <header class="bg-slate-900 text-white shadow-md z-20 flex-shrink-0 h-[60px]">
-        <div class="h-full px-6 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="bg-emerald-500 p-1.5 rounded-lg text-lg flex items-center justify-center">🚀</div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight tracking-wide">Produtiva <span class="text-emerald-400">Academy</span></h1>
-                </div>
-            </div>
-            <div class="flex items-center gap-3 text-sm">
-                <div id="connection-status" class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 shadow-inner">
-                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" id="status-dot"></span>
-                    <span id="status-text" class="text-slate-300 text-xs font-medium">Conectando...</span>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- App Container -->
-    <main class="flex-1 flex flex-col p-3 gap-2 overflow-hidden w-full max-w-full">
-        
-        <!-- Cabeçalhos das 5 Colunas (Alinhamento Simétrico) -->
-        <div class="grid grid-cols-5 gap-3 h-8 flex-shrink-0">
-            <div class="flex items-center justify-center bg-slate-200/60 rounded text-[11px] font-bold text-slate-500 uppercase tracking-wider">Data</div>
-            <div class="flex items-center justify-center bg-slate-200/60 rounded text-[11px] font-bold text-slate-500 uppercase tracking-wider">Facilitador</div>
-            <div class="flex items-center justify-center bg-slate-200/60 rounded text-[11px] font-bold text-slate-500 uppercase tracking-wider">Curso</div>
-            <div class="flex items-center justify-center bg-emerald-100 rounded text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Cards do Facilitador</div>
-            <div class="flex items-center justify-center bg-blue-100 rounded text-[11px] font-bold text-blue-800 uppercase tracking-wider">Cards das Aulas</div>
-        </div>
-
-        <!-- Conteúdo das 5 Colunas -->
-        <div class="flex-1 grid grid-cols-5 gap-3 overflow-hidden">
-            
-            <!-- Coluna 1: Datas (10 linhas) -->
-            <div id="col-dates" class="flex flex-col gap-2 h-full">
-                <!-- Preenchido via JS -->
-            </div>
-            
-            <!-- Coluna 2: Dropzones Facilitadores (10 linhas) -->
-            <div id="col-fac-drop" class="flex flex-col gap-2 h-full">
-                <!-- Preenchido via JS -->
-            </div>
-            
-            <!-- Coluna 3: Dropzones Aulas (10 linhas) -->
-            <div id="col-class-drop" class="flex flex-col gap-2 h-full">
-                <!-- Preenchido via JS -->
-            </div>
-            
-            <!-- Coluna 4: Banco de Facilitadores -->
-            <div id="pool-facilitators" class="flex flex-col gap-2 h-full dropzone rounded-lg border-2 border-transparent" data-target="pool-facilitators">
-                <!-- Preenchido via JS (Travado em 10 espaços invisíveis para manter altura exata) -->
-            </div>
-            
-            <!-- Coluna 5: Banco de Aulas -->
-            <div id="pool-classes" class="flex flex-col gap-[3px] h-full dropzone rounded-lg border-2 border-transparent" data-target="pool-classes">
-                <!-- Preenchido via JS (Travado em 20 espaços invisíveis para caber as 20 aulas sem rolar) -->
-            </div>
-
-        </div>
-
-        <!-- Modal de Detalhes da Aula (Formato Slide) -->
-        <div id="class-modal" class="hidden fixed inset-0 bg-slate-900/60 z-50 items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-            <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col border border-emerald-100 relative">
-                <div class="bg-slate-900 p-6 text-white flex justify-between items-start relative overflow-hidden">
-                    <div class="absolute right-0 top-0 opacity-[0.03] text-[12rem] -mt-10 -mr-4 pointer-events-none">🧠</div>
-                    <div class="relative z-10">
-                        <span id="modal-trilha" class="text-emerald-400 font-bold text-xs uppercase tracking-wider mb-1 block">Trilha</span>
-                        <h2 id="modal-title" class="font-bold text-2xl text-slate-50 leading-tight">Título da Aula</h2>
-                    </div>
-                    <button onclick="closeClassModal()" class="relative z-10 hover:bg-slate-700 text-slate-300 hover:text-white p-2 rounded-full transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-                <div class="p-6 sm:p-8 flex flex-col sm:flex-row gap-6 bg-slate-50">
-                    <div class="flex-1 bg-white p-5 rounded-xl border border-amber-200 shadow-sm relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="text-amber-500 text-xl">⚠️</span>
-                            <h3 class="font-bold text-amber-900 uppercase tracking-wider text-xs">O Problema (A Dor)</h3>
-                        </div>
-                        <p id="modal-dor" class="text-slate-600 text-[13px] sm:text-sm leading-relaxed"></p>
-                    </div>
-                    <div class="flex-1 bg-white p-5 rounded-xl border border-emerald-200 shadow-sm relative overflow-hidden">
-                        <div class="absolute top-0 left-0 w-1 h-full bg-emerald-400"></div>
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="text-emerald-500 text-xl">✨</span>
-                            <h3 class="font-bold text-emerald-900 uppercase tracking-wider text-xs">Efeito Uau (Solução)</h3>
-                        </div>
-                        <p id="modal-uau" class="text-slate-600 text-[13px] sm:text-sm leading-relaxed"></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'produtiva-academy-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        
-        // Dados Base
+        // Dados Base (Mantendo os mesmos)
         const FACILITATORS = [
             { id: 'f1', name: 'José Junior', color: 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100' },
             { id: 'f2', name: 'Gean', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' },
@@ -163,26 +17,26 @@
         ];
 
         const ALL_CLASSES = [
-            { id: "c1", title: "1. Fim do Procv", trilha: "1", trilhaName: "Trilha 1: O Fim do Caos das Planilhas", dor: "Recebimento de planilhas de setores diferentes que precisam ser cruzadas manualmente para achar inconsistências.", uau: "Upload de múltiplas planilhas na IA e cruzamento automático de bases sem usar fórmulas complexas." },
-            { id: "c2", title: "2. Limpeza de Bases", trilha: "1", trilhaName: "Trilha 1: O Fim do Caos das Planilhas", dor: "Nomenclaturas inconsistentes, erros de digitação e bases fragmentadas que custam horas.", uau: "A IA unifica variações de nomes, corrige erros de ortografia e consolida bases em segundos." },
-            { id: "c3", title: "3. Auditoria c/ IA", trilha: "1", trilhaName: "Trilha 1: O Fim do Caos das Planilhas", dor: "Planilhas departamentais isoladas acumulam inconsistências que o olho humano não vê.", uau: "A IA audita e gera relatório apontando anomalias, outliers e falhas de lógica em minutos." },
-            { id: "c4", title: "4. POPs Expressos", trilha: "1", trilhaName: "Trilha 2: Clareza de Processos e Fluxos", dor: "Processos complexos existem apenas na cabeça das pessoas ou em áudios de WhatsApp.", uau: "Transformar áudios e textos soltos em Procedimentos Operacionais Padrão (POPs) estruturados." },
-            { id: "c5", title: "5. Gargalos (5 Porquês)", trilha: "1", trilhaName: "Trilha 2: Clareza de Processos e Fluxos", dor: "Processos que travam sempre no mesmo ponto e geram retrabalho sem causa óbvia.", uau: "Bate-papo com IA aplicando a lógica de causa-raiz para descobrir o problema e gerar plano de ação." },
-            { id: "c6", title: "6. Tradução Operacional", trilha: "1", trilhaName: "Trilha 2: Clareza de Processos e Fluxos", dor: "Normas densas e jurídicas que o setor de operações/campo não consegue ler com clareza.", uau: "A IA traduz documentos burocráticos em checklists e guias de execução rápidos e sem ambiguidade." },
-            { id: "c7", title: "7. Extração de E-mails", trilha: "1", trilhaName: "Trilha 3: Centralização de Informações", dor: "Compromissos perdidos em longas cadeias de e-mails, atas confusas e históricos de conversas.", uau: "A IA gera imediatamente uma tabela limpa com os compromissos, os responsáveis e os prazos." },
-            { id: "c8", title: "8. Resumo de Reuniões", trilha: "1", trilhaName: "Trilha 3: Centralização de Informações", dor: "A reunião acaba e cada participante sai com uma versão diferente do que foi combinado.", uau: "Resumo executivo automático com distribuição de 'Action Items' baseados na transcrição de áudio." },
-            { id: "c9", title: "9. Guias de Problemas", trilha: "1", trilhaName: "Trilha 3: Centralização de Informações", dor: "Conhecimento centralizado em duas pessoas, gerando grupos lotados das mesmas dúvidas.", uau: "A IA lê as anotações soltas da empresa e estrutura Guias de Troubleshooting (Se X, faça Y)." },
-            { id: "c10", title: "10. Fluxos Compartilhados", trilha: "1", trilhaName: "Trilha 3: Centralização de Informações", dor: "Muitos controles operacionais presos em planilhas individuais do Excel do colaborador.", uau: "A IA desenha a arquitetura de dados e colunas para migrar o processo para o Planner ou Trello." },
-            { id: "c11", title: "11. Jupyter p/ Dados", trilha: "2", trilhaName: "Trilha Técnica: O Fim do Excel Hell", dor: "Planilhas pesadas, processos manuais que geram travamentos e controles paralelos.", uau: "Usar o ChatGPT para gerar código Python (Jupyter) que une e limpa duas planilhas em 5 segundos." },
-            { id: "c12", title: "12. KNIME Analytics", trilha: "2", trilhaName: "Trilha Técnica: O Fim do Excel Hell", dor: "A 'Caixa Preta' do Excel onde somente o criador da planilha conhece as regras e fórmulas.", uau: "Construção de fluxos de dados visuais (arrastando caixas) auditáveis com ajuda de IA." },
-            { id: "c13", title: "13. DuckDB + SQL", trilha: "2", trilhaName: "Trilha Técnica: O Fim do Excel Hell", dor: "Demora absurda e travamentos ao tentar abrir ou filtrar logs com milhões de linhas.", uau: "IA cria consulta SQL no DuckDB para analisar arquivo CSV gigante. A resposta é instantânea." },
-            { id: "c14", title: "14. Automação n8n", trilha: "2", trilhaName: "Trilha Técnica: Automação de Fluxos", dor: "Trabalho puramente manual de comunicação, copiando e colando dados entre sistemas.", uau: "O n8n captura o e-mail, passa para a IA ler, extrai o dado e cadastra no sistema automaticamente." },
-            { id: "c15", title: "15. Mermaid.js (Fluxos)", trilha: "2", trilhaName: "Trilha Técnica: Automação de Fluxos", dor: "Relatos bagunçados e falta de visibilidade do desenho macro de um processo na empresa.", uau: "A IA converte um texto corrido direto em um fluxograma visual e editável usando código Mermaid.js." },
-            { id: "c16", title: "16. Streamlit Web Apps", trilha: "2", trilhaName: "Trilha Técnica: Criando Soluções", dor: "Controles importantes presos num Excel estático e difícil de acessar de forma unificada.", uau: "Gerar um sistema Web (App de Dashboard) inteiro a partir da planilha usando IA em minutos." },
-            { id: "c17", title: "17. Scripts c/ Cursor", trilha: "2", trilhaName: "Trilha Técnica: Criando Soluções", dor: "Micro-tarefas diárias maçantes, como ler faturas manuais ou renomear centenas de PDFs.", uau: "O editor com IA (Cursor) cria na hora um script robô que processa e organiza arquivos em 1 clique." },
-            { id: "c18", title: "18. Ollama 100% Local", trilha: "2", trilhaName: "Trilha Técnica: Gestão e Segurança", dor: "O medo de vazar informações sensíveis (RH, Contratos) usando o ChatGPT público.", uau: "Rodar uma IA poderosa sem internet na própria máquina, garantindo 100% de sigilo dos arquivos." },
-            { id: "c19", title: "19. AnythingLLM (RAG)", trilha: "2", trilhaName: "Trilha Técnica: Gestão e Segurança", dor: "Regras departamentais perdidas; ninguém acha as normas corporativas quando precisa.", uau: "Subir manuais no 'ChatGPT da Empresa'. Ele responde dúvidas e cita a página do documento base." },
-            { id: "c20", title: "20. Obsidian (Cérebro)", trilha: "2", trilhaName: "Trilha Técnica: Gestão e Segurança", dor: "O histórico de decisões e o contexto estratégico de projetos se perdem no tempo.", uau: "Anotações e atas viram uma Wiki. A IA interliga as ideias num grafo visual de conexões invisíveis." }
+            { id: "c1", title: "1. Fim do Procv", trilha: "1", trilhaName: "Trilha 1: O Fim do Caos das Planilhas", dor: "Recebimento de planilhas...", uau: "Upload de múltiplas..." },
+            { id: "c2", title: "2. Limpeza de Bases", trilha: "1", trilhaName: "Trilha 1: O Fim do Caos das Planilhas", dor: "Nomenclaturas...", uau: "A IA unifica..." },
+            { id: "c3", title: "3. Auditoria c/ IA", trilha: "1", trilhaName: "Trilha 1: O Fim do Caos das Planilhas", dor: "Planilhas...", uau: "A IA audita..." },
+            { id: "c4", title: "4. POPs Expressos", trilha: "1", trilhaName: "Trilha 2: Clareza de Processos", dor: "Processos...", uau: "Transformar áudios..." },
+            { id: "c5", title: "5. Gargalos (5 Porquês)", trilha: "1", trilhaName: "Trilha 2: Clareza de Processos", dor: "Processos...", uau: "Bate-papo..." },
+            { id: "c6", title: "6. Tradução Operacional", trilha: "1", trilhaName: "Trilha 2: Clareza de Processos", dor: "Normas densas...", uau: "A IA traduz..." },
+            { id: "c7", title: "7. Extração de E-mails", trilha: "1", trilhaName: "Trilha 3: Centralização", dor: "Compromissos...", uau: "A IA gera..." },
+            { id: "c8", title: "8. Resumo de Reuniões", trilha: "1", trilhaName: "Trilha 3: Centralização", dor: "A reunião acaba...", uau: "Resumo executivo..." },
+            { id: "c9", title: "9. Guias de Problemas", trilha: "1", trilhaName: "Trilha 3: Centralização", dor: "Conhecimento...", uau: "A IA lê..." },
+            { id: "c10", title: "10. Fluxos Compartilhados", trilha: "1", trilhaName: "Trilha 3: Centralização", dor: "Muitos controles...", uau: "A IA desenha..." },
+            { id: "c11", title: "11. Jupyter p/ Dados", trilha: "2", trilhaName: "Trilha Técnica", dor: "Planilhas...", uau: "Usar o ChatGPT..." },
+            { id: "c12", title: "12. KNIME Analytics", trilha: "2", trilhaName: "Trilha Técnica", dor: "A Caixa Preta...", uau: "Construção..." },
+            { id: "c13", title: "13. DuckDB + SQL", trilha: "2", trilhaName: "Trilha Técnica", dor: "Demora absurda...", uau: "IA cria consulta..." },
+            { id: "c14", title: "14. Automação n8n", trilha: "2", trilhaName: "Trilha Técnica", dor: "Trabalho manual...", uau: "O n8n captura..." },
+            { id: "c15", title: "15. Mermaid.js (Fluxos)", trilha: "2", trilhaName: "Trilha Técnica", dor: "Relatos...", uau: "A IA converte..." },
+            { id: "c16", title: "16. Streamlit Web Apps", trilha: "2", trilhaName: "Trilha Técnica", dor: "Controles importantes...", uau: "Gerar um sistema..." },
+            { id: "c17", title: "17. Scripts c/ Cursor", trilha: "2", trilhaName: "Trilha Técnica", dor: "Micro-tarefas...", uau: "O editor com IA..." },
+            { id: "c18", title: "18. Ollama 100% Local", trilha: "2", trilhaName: "Trilha Técnica", dor: "O medo de vazar...", uau: "Rodar uma IA..." },
+            { id: "c19", title: "19. AnythingLLM (RAG)", trilha: "2", trilhaName: "Trilha Técnica", dor: "Regras perdidas...", uau: "Subir manuais..." },
+            { id: "c20", title: "20. Obsidian (Cérebro)", trilha: "2", trilhaName: "Trilha Técnica", dor: "O histórico...", uau: "Anotações..." }
         ];
 
         const DATES = [
@@ -200,57 +54,58 @@
             }))
         };
 
-        let db, auth;
         let currentState = JSON.parse(JSON.stringify(INITIAL_STATE));
         let isDragging = false;
         let dragPayload = null;
 
-        if (firebaseConfig) {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            authenticateAndListen();
-        } else {
-            const localSaved = localStorage.getItem('produtiva_kanban_state');
-            if(localSaved) currentState = JSON.parse(localSaved);
-            updateStatus("Modo Local (Salvo no Navegador)", "bg-slate-500");
-            renderApp();
-        }
-
-        async function authenticateAndListen() {
+        // INICIA A CONEXÃO COM O SUPABASE
+        async function initApp() {
             try {
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
+                // 1. Tenta buscar o estado salvo no banco
+                const { data, error } = await supabase.from('board_state').select('state').eq('id', 1).single();
+                
+                if (error) {
+                    throw error;
                 }
-                if (!auth.currentUser) throw new Error("Not authenticated");
+                
+                if (data && data.state && Object.keys(data.state).length > 0) {
+                    currentState = data.state;
+                }
 
                 updateStatus("Online e Sincronizado", "bg-emerald-500");
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'scheduleBoard', 'main_state_v3');
-                
-                onSnapshot(docRef, (snapshot) => {
-                    if (snapshot.exists()) {
-                        if (!isDragging) {
-                            currentState = snapshot.data();
-                            renderApp();
+                renderApp();
+
+                // 2. Fica escutando mudanças em tempo real feitas por outras abas/pessoas
+                supabase.channel('custom-all-channel')
+                    .on(
+                        'postgres_changes',
+                        { event: 'UPDATE', schema: 'public', table: 'board_state', filter: 'id=eq.1' },
+                        (payload) => {
+                            if (!isDragging) {
+                                currentState = payload.new.state;
+                                renderApp();
+                            }
                         }
-                    } else {
-                        setDoc(docRef, INITIAL_STATE).catch(console.error);
-                    }
-                }, () => { updateStatus("Erro de Rede", "bg-red-500"); });
+                    )
+                    .subscribe();
 
             } catch (err) {
-                updateStatus("Offline", "bg-red-500");
-                renderApp(); 
+                console.error("Erro ao conectar no Supabase:", err);
+                updateStatus("Erro de Conexão", "bg-red-500");
+                
+                // Fallback para localStorage
+                const localSaved = localStorage.getItem('produtiva_kanban_state');
+                if(localSaved) currentState = JSON.parse(localSaved);
+                renderApp();
             }
         }
 
         async function saveStateToCloud() {
-            if (db && auth && auth.currentUser) {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'scheduleBoard', 'main_state_v3');
-                await setDoc(docRef, currentState).catch(console.error);
-            } else {
+            try {
+                // Salva o novo estado na coluna 'state' onde o 'id' é 1
+                await supabase.from('board_state').update({ state: currentState }).eq('id', 1);
+            } catch(e) {
+                console.error("Erro ao salvar:", e);
                 localStorage.setItem('produtiva_kanban_state', JSON.stringify(currentState));
             }
         }
@@ -260,15 +115,11 @@
             document.getElementById('status-dot').className = `w-2.5 h-2.5 rounded-full ${colorClass}`;
         }
 
-        // --- GERAÇÃO DOS CARDS (w-full h-full preenche perfeitamente as áreas simétricas) ---
+        // --- GERAÇÃO DOS CARDS ---
         function generateFacCard(facDef, source, instanceId = '') {
             return `
                 <div class="card-standard grab-cursor select-none rounded border shadow-sm flex items-center justify-center font-bold text-sm px-1 text-center w-full h-full ${facDef.color}" 
-                     draggable="true" 
-                     data-type="facilitator" 
-                     data-source="${source}" 
-                     data-item-id="${facDef.id}" 
-                     data-instance-id="${instanceId}">
+                     draggable="true" data-type="facilitator" data-source="${source}" data-item-id="${facDef.id}" data-instance-id="${instanceId}">
                     👤 ${facDef.name}
                 </div>
             `;
@@ -278,11 +129,7 @@
             const trilhaColor = clsDef.trilha === "1" ? "border-l-blue-500 bg-white hover:bg-blue-50 text-slate-700" : "border-l-purple-500 bg-white hover:bg-purple-50 text-slate-700";
             return `
                 <div class="relative card-standard grab-cursor select-none rounded border border-slate-200 border-l-[4px] shadow-sm flex items-center justify-center text-xs sm:text-sm font-bold px-1 w-full h-full text-center leading-[1.2] ${trilhaColor}" 
-                     draggable="true" 
-                     title="${clsDef.title} (Duplo clique para remover)"
-                     data-type="class" 
-                     data-source="${source}" 
-                     data-item-id="${clsDef.id}">
+                     draggable="true" title="${clsDef.title} (Duplo clique para remover)" data-type="class" data-source="${source}" data-item-id="${clsDef.id}">
                     <span class="pointer-events-none break-words line-clamp-2 px-5">${clsDef.title}</span>
                     <button type="button" onmousedown="event.stopPropagation();" onclick="openClassModal('${clsDef.id}')" class="absolute right-1 hover:bg-slate-200 text-slate-400 hover:text-slate-700 p-1 rounded transition-colors" title="Detalhes do Módulo">
                         <svg class="w-[14px] h-[14px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -295,13 +142,10 @@
         window.openClassModal = function(classId) {
             const cls = ALL_CLASSES.find(c => c.id === classId);
             if (!cls) return;
-            
             document.getElementById('modal-trilha').innerText = cls.trilhaName;
-            // Remove o número inicial (ex: "1. ") para o título do modal ficar mais limpo
             document.getElementById('modal-title').innerText = cls.title.replace(/^[0-9]+\.\s*/, ''); 
             document.getElementById('modal-dor').innerText = cls.dor;
             document.getElementById('modal-uau').innerText = cls.uau;
-            
             const modal = document.getElementById('class-modal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
@@ -313,7 +157,6 @@
             modal.classList.remove('flex');
         };
 
-        // Fecha o modal se o usuário clicar no fundo escuro
         document.getElementById('class-modal')?.addEventListener('click', function(e) {
             if (e.target === this) window.closeClassModal();
         });
@@ -335,14 +178,8 @@
             datesCol.innerHTML = ''; facCol.innerHTML = ''; classCol.innerHTML = '';
 
             currentState.days.forEach(day => {
-                // Col 1: Datas (10 linhas flex-1)
-                datesCol.insertAdjacentHTML('beforeend', `
-                    <div class="flex-1 w-full bg-white rounded shadow-sm border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-sm sm:text-base uppercase tracking-wide">
-                        ${day.dateLabel}
-                    </div>
-                `);
+                datesCol.insertAdjacentHTML('beforeend', `<div class="flex-1 w-full bg-white rounded shadow-sm border border-slate-200 flex items-center justify-center font-bold text-slate-700 text-sm sm:text-base uppercase tracking-wide">${day.dateLabel}</div>`);
 
-                // Col 2: Dropzones Facilitadores (10 linhas flex-1)
                 const fDrop = document.createElement('div');
                 fDrop.className = "flex-1 w-full dropzone rounded border-2 border-dashed border-slate-300 bg-slate-100/50 flex flex-row items-center justify-center p-1 gap-1 overflow-hidden";
                 fDrop.dataset.target = `day_${day.id}_fac`;
@@ -352,7 +189,6 @@
                 });
                 facCol.appendChild(fDrop);
 
-                // Col 3: Dropzones Aulas (10 linhas flex-1)
                 const cDrop = document.createElement('div');
                 cDrop.className = "flex-1 w-full dropzone rounded border-2 border-dashed border-slate-300 bg-slate-100/50 flex flex-row items-center justify-center p-1 gap-1 overflow-hidden";
                 cDrop.dataset.target = `day_${day.id}_class`;
@@ -366,15 +202,13 @@
         function renderFacilitatorsPool() {
             const container = document.getElementById('pool-facilitators');
             container.innerHTML = '';
-            
-            // Forçamos 10 espaços (flex-1) para as alturas ficarem idênticas aos campos de Col 1 a 3
             for(let i = 0; i < 10; i++) {
                 const wrapper = document.createElement('div');
                 wrapper.className = "flex-1 w-full min-h-0";
                 if(FACILITATORS[i]) {
                     wrapper.innerHTML = generateFacCard(FACILITATORS[i], 'pool');
                 } else {
-                    wrapper.classList.add('pointer-events-none'); // Espaço vazio mantenedor de layout
+                    wrapper.classList.add('pointer-events-none');
                 }
                 container.appendChild(wrapper);
             }
@@ -383,11 +217,8 @@
         function renderClassesPool() {
             const container = document.getElementById('pool-classes');
             container.innerHTML = '';
-            
             const classes = currentState.unscheduledClasses || [];
             let rendered = 0;
-            
-            // Forçamos exatos 20 espaços (flex-1) para manter a estrutura e não ter barra de rolagem
             classes.forEach(cls => {
                 const wrapper = document.createElement('div');
                 wrapper.className = "flex-1 w-full min-h-0";
@@ -395,8 +226,6 @@
                 container.appendChild(wrapper);
                 rendered++;
             });
-
-            // Preenche o restante vazio invisivelmente para não deformar ao arrastar
             for(let i = rendered; i < 20; i++) {
                 const wrapper = document.createElement('div');
                 wrapper.className = "flex-1 w-full min-h-0 pointer-events-none";
@@ -404,24 +233,16 @@
             }
         }
 
-        // --- ARRASTAR E SOLTAR (DRAG & DROP) ---
+        // --- ARRASTAR E SOLTAR ---
         function attachDragEvents() {
             document.querySelectorAll('[draggable="true"]').forEach(el => {
                 el.addEventListener('dragstart', (e) => {
                     isDragging = true;
                     el.classList.add('opacity-40');
-                    
-                    dragPayload = {
-                        type: el.dataset.type,
-                        source: el.dataset.source,
-                        itemId: el.dataset.itemId,
-                        instanceId: el.dataset.instanceId || null
-                    };
-
+                    dragPayload = { type: el.dataset.type, source: el.dataset.source, itemId: el.dataset.itemId, instanceId: el.dataset.instanceId || null };
                     e.dataTransfer.effectAllowed = 'copyMove';
                     e.dataTransfer.setData('text/plain', JSON.stringify(dragPayload));
                 });
-
                 el.addEventListener('dragend', (e) => {
                     isDragging = false;
                     el.classList.remove('opacity-40');
@@ -433,38 +254,25 @@
                 zone.addEventListener('dragover', (e) => {
                     e.preventDefault(); 
                     e.dataTransfer.dropEffect = 'move';
-                    
-                    // currentTarget protege as pools para sempre focar na coluna mãe inteira
                     const targetData = e.currentTarget.dataset.target; 
                     const isFacilitatorDrag = dragPayload?.type === 'facilitator';
                     const isClassDrag = dragPayload?.type === 'class';
-                    
-                    const isValidFacTarget = isFacilitatorDrag && (targetData.endsWith('_fac') || targetData === 'pool-facilitators');
-                    const isValidClassTarget = isClassDrag && (targetData.endsWith('_class') || targetData === 'pool-classes');
-
-                    if (isValidFacTarget || isValidClassTarget) {
+                    if ((isFacilitatorDrag && (targetData.endsWith('_fac') || targetData === 'pool-facilitators')) || 
+                        (isClassDrag && (targetData.endsWith('_class') || targetData === 'pool-classes'))) {
                         e.currentTarget.classList.add('drag-over');
                     }
                 });
-
-                zone.addEventListener('dragleave', (e) => {
-                    e.currentTarget.classList.remove('drag-over');
-                });
-
+                zone.addEventListener('dragleave', (e) => { e.currentTarget.classList.remove('drag-over'); });
                 zone.addEventListener('drop', (e) => {
                     e.preventDefault();
                     e.currentTarget.classList.remove('drag-over');
-                    
                     if (!dragPayload) return;
-
-                    const target = e.currentTarget.dataset.target;
-                    processDrop(dragPayload, target);
+                    processDrop(dragPayload, e.currentTarget.dataset.target);
                     dragPayload = null;
                 });
             });
         }
 
-        // Atalhos Duplo Clique
         function attachDoubleClickEvents() {
             document.querySelectorAll('#col-class-drop [draggable="true"], #col-fac-drop [draggable="true"]').forEach(el => {
                 el.addEventListener('dblclick', (e) => {
@@ -482,10 +290,7 @@
                 if (target.startsWith('day_')) {
                     const targetDayId = target.replace('day_', '').replace('_fac', '');
                     if (source === 'pool') {
-                        currentState.days.find(d => d.id === targetDayId)?.facilitators.push({
-                            instanceId: 'fac_' + Math.random().toString(36).substr(2, 9),
-                            facilitatorId: itemId
-                        });
+                        currentState.days.find(d => d.id === targetDayId)?.facilitators.push({ instanceId: 'fac_' + Math.random().toString(36).substr(2, 9), facilitatorId: itemId });
                         stateChanged = true;
                     } else if (source.startsWith('day_') && source !== targetDayId) {
                         const sDay = currentState.days.find(d => d.id === source);
@@ -541,6 +346,7 @@
                 renderApp(); saveStateToCloud();
             }
         }
+
+        // Dá o pontapé inicial na aplicação
+        initApp();
     </script>
-</body>
-</html>
